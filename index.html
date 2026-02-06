@@ -3,29 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FSSequencer</title>
+    <title>FSSequencer - Mashup Station</title>
     <style>
-        body { font-family: sans-serif; padding: 15px; background: #121212; color: #e0e0e0; }
-        .box { border: 2px solid #333; padding: 20px; margin-bottom: 20px; border-radius: 12px; background: #1e1e1e; }
-        h1 { color: #00d4ff; text-align: center; }
-        button { background: #00d4ff; color: #000; border: none; padding: 14px; border-radius: 8px; width: 100%; font-weight: bold; margin-top: 10px; }
-        input { width: 100%; padding: 12px; box-sizing: border-box; border-radius: 8px; border: 1px solid #444; background: #0a0a0a; color: white; }
+        body { background: #121212; color: #e0e0e0; font-family: sans-serif; text-align: center; padding: 20px; }
+        .box { background: #1e1e1e; border: 2px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        h1 { color: #00ffcc; }
+        button { background: #00ffcc; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        input { padding: 10px; border-radius: 5px; border: 1px solid #333; background: #222; color: #fff; width: 80%; }
+        #status { color: #ffcc00; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <h1>FSSequencer</h1>
+
+    <h1>Mashup Station</h1>
+    <p>FSSequencer v1.0</p>
+
     <div class="box">
-        <strong>1. Search Beats</strong>
-        <input type="text" id="search-input" placeholder="Search Freesound...">
-        <button onclick="alert('Searching...')">Search</button>
+        <strong>1. Find Beats (Freesound)</strong><br><br>
+        <input type="text" id="query" placeholder="Type 'trap beat' or 'drums'...">
+        <button onclick="searchFreesound()">Search</button>
+        <div id="results"></div>
     </div>
+
     <div class="box">
-        <strong>2. Upload Audio</strong>
-        <input type="file" id="upload-btn" accept="audio/*">
-    </div>
-    <div class="box">
-        <strong>3. Record</strong>
-        <button onclick="alert('Recording...')">Start Recording</button>
-    </div>
-</body>
-</html>
+        <strong>2. Upload Your Audio</strong><br><br>
+        <input type="file" id="audio-upload" accept="audio/*">
+        
