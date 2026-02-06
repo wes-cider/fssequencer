@@ -2,46 +2,91 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FSSequencer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FSSequencer Mobile Pro</title>
+    <script src="https://unpkg.com/wavesurfer.js@7"></script>
     <style>
-        body { background: #121212; color: #00ffcc; font-family: monospace; text-align: center; padding: 10px; }
-        .grid { display: grid; grid-template-columns: repeat(16, 1fr); gap: 4px; max-width: 600px; margin: 20px auto; }
-        .step { width: 100%; aspect-ratio: 1; background: #333; border: 1px solid #444; border-radius: 3px; cursor: pointer; }
-        .step.active { background: #00ffcc; box-shadow: 0 0 10px #00ffcc; }
-        .controls { margin-bottom: 20px; background: #1e1e1e; padding: 15px; border-radius: 8px; }
-        .track-label { text-align: left; grid-column: span 16; margin-top: 10px; color: #aaa; font-size: 12px; }
-        button { background: #00ffcc; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        :root { --neon: #00ffcc; --bg: #121212; --panel: #1e1e1e; }
+        body { background: var(--bg); color: var(--neon); font-family: sans-serif; padding: 10px; margin: 0; touch-action: manipulation; }
+        h1 { font-size: 1.5rem; text-align: center; margin: 10px 0; letter-spacing: 2px; }
+        
+        .track-box { background: var(--panel); border: 1px solid #333; margin-bottom: 15px; padding: 12px; border-radius: 15px; }
+        .controls { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+        
+        /* Larger Mobile Sliders */
+        .slider-group { display: flex; flex-direction: column; align-items: center; flex: 1; }
+        input[type="range"] { width: 100%; height: 30px; accent-color: var(--neon); cursor: pointer; }
+        .label { font-size: 10px; color: #888; margin-top: 4px; }
+
+        .wave-display { background: #000; height: 50px; border-radius: 8px; margin: 10px 0; border: 1px solid #222; }
+        
+        .grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin-top: 10px; }
+        .step { aspect-ratio: 1; background: #333; border-radius: 6px; border: 1px solid #444; -webkit-tap-highlight-color: transparent; }
+        .step.active { background: var(--neon); box-shadow: 0 0 12px var(--neon); border-color: #fff; }
+
+        button { background: var(--neon); color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; }
+        .btn-play { width: 100%; padding: 20px; font-size: 1.2rem; margin-bottom: 15px; }
     </style>
 </head>
 <body>
-    <h1>FSSEQUENCER v1.0</h1>
-    <div class="controls">
-        <button id="play-btn">PLAY</button>
-        <button onclick="clearGrid()" style="background:#ff4444; color:white;">CLEAR ALL</button>
+
+    <h1>FSSEQUENCER v1.4</h1>
+    
+    <button class="btn-play">PLAY MASTER</button>
+
+    <div class="track-box">
+        <div class="controls">
+            <strong>KICK</strong>
+            <div class="slider-group">
+                <input type="range" min="0" max="1" step="0.1" value="0.8">
+                <span class="label">VOLUME</span>
+            </div>
+            <div class="slider-group">
+                <input type="range" min="0.5" max="2" step="0.1" value="1">
+                <span class="label">PITCH</span>
+            </div>
+            <button onclick="alert('Searching Freesound...')">SEARCH</button>
+        </div>
+        <div id="waveform-kick" class="wave-display"></div>
+        <div id="grid-kick" class="grid"></div>
     </div>
-    <div id="sequencer-container"></div>
+
+    <div class="track-box">
+        <div class="controls">
+            <strong>SNARE</strong>
+            <div class="slider-group">
+                <input type="range" min="0" max="1" step="0.1" value="0.8">
+                <span class="label">VOLUME</span>
+            </div>
+            <div class="slider-group">
+                <input type="range" min="0.5" max="2" step="0.1" value="1">
+                <span class="label">PITCH</span>
+            </div>
+            <button onclick="alert('Searching Freesound...')">SEARCH</button>
+        </div>
+        <div id="waveform-snare" class="wave-display"></div>
+        <div id="grid-snare" class="grid"></div>
+    </div>
+
     <script>
-        const container = document.getElementById('sequencer-container');
-        const tracks = ['KICK', 'SNARE', 'HI-HAT', 'LOOP 1'];
-        tracks.forEach(track => {
-            const label = document.createElement('div');
-            label.className = 'track-label';
-            label.innerText = track;
-            container.appendChild(label);
-            const row = document.createElement('div');
-            row.className = 'grid';
+        // Init Wavesurfer with Mobile Touch enabled
+        const kickWave = WaveSurfer.create({ container: '#waveform-kick', waveColor: '#555', progressColor: '#00ffcc', cursorWidth: 2, interact: true });
+        const snareWave = WaveSurfer.create({ container: '#waveform-snare', waveColor: '#555', progressColor: '#00ffcc', cursorWidth: 2, interact: true });
+
+        // Build 16 steps (using 2 rows of 8 for better mobile fit)
+        ['kick', 'snare'].forEach(id => {
+            const grid = document.getElementById('grid-' + id);
             for (let i = 0; i < 16; i++) {
                 const step = document.createElement('div');
                 step.className = 'step';
-                step.onclick = () => step.classList.toggle('active');
-                row.appendChild(step);
+                // Using pointerdown for instant mobile response
+                step.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    step.classList.toggle('active');
+                });
+                grid.appendChild(step);
             }
-            container.appendChild(row);
         });
-        function clearGrid() {
-            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-        }
     </script>
 </body>
 </html>
